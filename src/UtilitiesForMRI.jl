@@ -1,6 +1,7 @@
 module UtilitiesForMRI
 
-using LinearAlgebra, SparseArrays, AbstractLinearOperators, FINUFFT, FFTW, PyPlot, ImageFiltering, Dierckx, ImageQualityIndexes
+using LinearAlgebra, SparseArrays, AbstractLinearOperators, FINUFFT, FFTW, PyPlot, ImageFiltering, Dierckx, ImageQualityIndexes, CUDA
+import CUDA.CUSPARSE: sparse
 
 const RealOrComplex{T<:Real} = Union{T,Complex{T}}
 

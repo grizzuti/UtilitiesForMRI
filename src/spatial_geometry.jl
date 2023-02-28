@@ -44,6 +44,13 @@ function coord(X::CartesianSpatialGeometry{T}; mesh::Bool=false) where {T<:Real}
 
 end
 
+function coord(X::CartesianSpatialGeometry{T}, dim::Integer) where {T<:Real}
+    n = X.nsamples[dim]
+    h = spacing(X)[dim]
+    o = X.origin[dim]
+    return ((1:n).-T(0.5))*h.-o
+end
+
 function k_coord(X::CartesianSpatialGeometry{T}; mesh::Bool=true) where {T<:Real}
     Lx, Ly, Lz = X.field_of_view
     nx, ny, nz = X.nsamples
@@ -54,6 +61,12 @@ function k_coord(X::CartesianSpatialGeometry{T}; mesh::Bool=true) where {T<:Real
         kz = repeat(reshape(kz, 1, 1, :); outer=(nx, ny, 1))
     end
     return kx, ky, kz
+end
+
+function k_coord(X::CartesianSpatialGeometry{T}, dim::Integer) where {T<:Real}
+    L = X.field_of_view[dim]
+    n = X.nsamples[dim]
+    return k_coord(L, n)
 end
 
 k_coord(L::T, n::Integer) where {T<:Real} = 2*T(pi)*T.(-div(n,2):div(n,2))[1:n]/L

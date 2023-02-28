@@ -3,6 +3,7 @@
 export psnr, ssim
 
 psnr(u_noisy::AbstractArray{T,2}, u_ref::AbstractArray{T,2}) where {T<:Real} = assess_psnr(u_noisy, u_ref)
+
 function psnr(u_noisy::AbstractArray{T,3}, u_ref::AbstractArray{T,3}; slices::Union{Nothing,NTuple{N,VolumeSlice}}=nothing, orientation::Orientation=standard_orientation()) where {T<:Real,N}
     if isnothing(slices)
         x, y, z = div.(size(u_noisy), 2).+1
@@ -18,6 +19,7 @@ function psnr(u_noisy::AbstractArray{T,3}, u_ref::AbstractArray{T,3}; slices::Un
 end
 
 ssim(u_noisy::AbstractArray{T,2}, u_ref::AbstractArray{T,2}) where {T<:Real} = assess_ssim(u_noisy, u_ref)
+
 function ssim(u_noisy::AbstractArray{T,3}, u_ref::AbstractArray{T,3}; slices::Union{Nothing,NTuple{N,VolumeSlice}}=nothing, orientation::Orientation=standard_orientation()) where {T<:Real,N}
     if isnothing(slices)
         x, y, z = div.(size(u_noisy), 2).+1
