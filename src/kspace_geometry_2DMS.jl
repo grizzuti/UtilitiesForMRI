@@ -13,7 +13,7 @@ end
 
 kspace_sampling(slice_plane::Integer, slice_coord::AbstractVector{<:AbstractVector{T}}, k_coord::AbstractArray{T,2}) where {T<:Real} = KSpaceSampling2DMS{T}(slice_plane, slice_coord, k_coord)
 
-k_coord(K::KSpaceSampling2DMS{T}) where {T<:Real} = K.k_coord
+coord(K::KSpaceSampling2DMS{T}) where {T<:Real} = K.k_coord
 slice_plane(K::KSpaceSampling2DMS{T}) where {T<:Real} = K.slice_plane
 slice_coord(K::KSpaceSampling2DMS{T}) where {T<:Real} = K.slice_coord
 
@@ -21,36 +21,29 @@ slice_coord(K::KSpaceSampling2DMS{T}) where {T<:Real} = K.slice_coord
 ## Structured k-space sampling
 
 struct StructuredKSpaceSampling2DMS{T}<:AbstractStructuredKSpaceSampling2DMS{T}
-    permutation_dims::NTuple{3,Integer}
-    coord_phase_encoding::AbstractArray{T,2} # k-space coordinates size=(nt,2)
+    slice_plane::Integer # plane-orthogonal direction
+    slice_coord::AbstractVector{<:AbstractVector{T}} # ordered slice coordinates
+    phase_encoding_dim::Integer
+    coord_phase_encoding::AbstractVector{T} # k-space coordinates size=(nt,)
     coord_readout::AbstractVector{T} # k-space coordinates size=(nk,)
 end
 
-kspace_sampling(permutation_dims::NTuple{3,Integer}, coord_phase_encoding::AbstractArray{T,2}, coord_readout::AbstractVector{T}) where {T<:Real} = StructuredKSpaceSampling2DMS{T}(permutation_dims, coord_phase_encoding, coord_readout)
+kspace_sampling(slice_plane::Integer, slice_coord::AbstractVector{<:AbstractVector{T}}, phase_encoding_dim::Integer, coord_phase_encoding::AbstractVector{T}, coord_readout::AbstractVector{T}) where {T<:Real} = StructuredKSpaceSampling2DMS{T}(slice_plane, slice_coord, phase_encoding_dim, coord_phase_encoding, coord_readout)
 
 coord_phase_encoding(K::StructuredKSpaceSampling2DMS) = K.coord_phase_encoding
 coord_readout(K::StructuredKSpaceSampling2DMS) = K.coord_readout
 
-function coord(K::AbstractStructuredKSpaceSampling2DMS{T}) where {T<:Real}
-    nt, nk = size(K)
-    perm = dims_permutation(K)
+perm(K::StructuredKSpaceSampling2DMS) = (K.phase_encoding_dim == 1) ? (1, 2) : (2, 1)
+
+function coord(K::AbstractStructuredKSpaceSampling2DMS)
     k_pe, k_r = coord_phase_encoding(K), coord_readout(K)
-    k_coordinates = cat(repeat(reshape(k_pe, nt,1,2); outer=(1,nk,1)), repeat(reshape(k_r, 1,nk,1); outer=(nt,1,1)); dims=3)[:,:,invperm(perm)]
-    return k_coordinates
+    perm = (K.phase_encoding_dim == 1)
+    k_coord = cat(repeat(reshape(k_pe, :, 1, 1); outer=(1, length(k_r), 1)),
+                  repeat(reshape(k_r,  1, :, 1); outer=(length(k_pe), 1, 1)); dims=3)[:, :, invperm(perm(K))]
+    return k_coord
 end
 
-Base.size(K::AbstractStructuredKSpaceSampling2DMS) = (size(coord_phase_encoding(K),1),length(coord_readout(K)))
-
-function Base.getindex(K::AbstractStructuredKSpaceSampling2DMS{T}, t::Integer) where {T<:Real}
-    _, nk = size(K)
-    return cat(repeat(reshape(coord_phase_encoding(K)[t,:],1,2); outer=(nk,1)), reshape(coord_readout(K),nk,1); dims=2)[:,invperm(dims_permutation(K))]
-end
-
-Base.convert(::Type{KSpaceSampling2DMS{T}}, K::AbstractStructuredKSpaceSampling2DMS{T}) where {T<:Real} = kspace_sampling(reshape(coord(K),:,3))
-Base.convert(::Type{KSpaceSampling2DMS}, K::AbstractStructuredKSpaceSampling2DMS{T}) where {T<:Real} = convert(KSpaceSampling{T}, K)
-
-phase_encoding_dims(K::AbstractStructuredKSpaceSampling2DMS) = K.permutation_dims[1:2]
-readout_dim(K::AbstractStructuredKSpaceSampling2DMS) = K.permutation_dims[3]
+Base.size(K::AbstractStructuredKSpaceSampling2DMS) = (length(coord_phase_encoding(K)),length(coord_readout(K)))
 
 
 ## Cartesian structured k-space sampling
