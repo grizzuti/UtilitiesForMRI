@@ -7,7 +7,8 @@ const RealOrComplex{T<:Real} = Union{T,Complex{T}}
 
 include("./abstract_types.jl")
 include("./spatial_geometry.jl")
-include("./kspace_geometry.jl")
+include("./kspace_geometry_3D.jl")
+include("./kspace_geometry_2DMS.jl")
 include("./scaling_utils.jl")
 include("./translations.jl")
 include("./rotations.jl")

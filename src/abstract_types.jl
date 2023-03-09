@@ -10,7 +10,12 @@ abstract type AbstractCartesianSpatialGeometry{T<:Real}<:AbstractSpatialGeometry
 ## k-space acquisition geometry
 
 abstract type AbstractKSpaceSampling{T<:Real} end
-abstract type AbstractStructuredKSpaceSampling{T<:Real}<:AbstractKSpaceSampling{T} end
+
+abstract type AbstractKSpaceSampling3D{T<:Real}<:AbstractKSpaceSampling{T} end # 3D
+abstract type AbstractStructuredKSpaceSampling3D{T<:Real}<:AbstractKSpaceSampling3D{T} end
+
+abstract type AbstractKSpaceSampling2DMS{T<:Real}<:AbstractKSpaceSampling{T} end # 2D-multislice
+abstract type AbstractStructuredKSpaceSampling2DMS{T<:Real}<:AbstractKSpaceSampling2DMS{T} end
 
 
 ## Fourier operators
